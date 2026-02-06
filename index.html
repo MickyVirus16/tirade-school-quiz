@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Constitution Awareness Quiz - शासकीय माध्यमिक आश्रम शाळा तिरडे</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="school-header">
+        <h1>शासकीय माध्यमिक आश्रम शाळा तिरडे</h1>
+        <p>स्वातंत्र्याचा अमृत महोत्सव</p>
+    </div>
+
+    <div id="loginSection" class="login-container">
+        <div class="login-box">
+            <h2>🎓 विद्यार्थी लॉगिन</h2>
+            <div class="form-group">
+                <label>पूर्ण नाव:</label>
+                <input type="text" id="studentName" placeholder="तुमचे नाव" required>
+            </div>
+            <div class="form-group">
+                <label>वर्ग:</label>
+                <select id="studentClass" required>
+                    <option value="">वर्ग निवडा</option>
+                    <option value="८ वी">८ वी</option>
+                    <option value="९ वी">९ वी</option>
+                    <option value="१० वी">१० वी</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>रोल नंबर:</label>
+                <input type="text" id="studentRoll" placeholder="उदा. २३" required>
+            </div>
+            <button class="btn btn-full" onclick="loginStudent()">लॉगिन करा</button>
+            <div id="resumeMessage" class="resume-message" style="display:none;">
+                <p>⚠️ तुमची मागील चाचणी अर्धवट सोडली आहे!</p>
+                <button class="btn btn-secondary" onclick="resumeQuiz()">चाचणी सुरू ठेवा</button>
+                <button class="btn btn-danger" onclick="startNewQuiz()">नवीन चाचणी सुरू करा</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="quizSection" style="display:none;">
+        <div class="student-info-bar">
+            <span id="displayName">नाव: </span>
+            <span id="displayClass">वर्ग: </span>
+            <span id="displayRoll">रोल नंबर: </span>
+            <button class="btn-logout" onclick="logout()">लॉगआउट</button>
+        </div>
+        <div class="timer" id="timer">वेळ: 60:00</div>
+        <div class="container">
+            <div class="header">
+                <h1>📝 Indian Constitution Awareness Quiz</h1>
+                <p>100 प्रश्नांची ऑनलाइन चाचणी</p>
+                <div class="exam-info">
+                    <span>⏱️ एकूण वेळ: 1 तास (60 मिनिटे)</span>
+                    <span>📋 एकूण गुण: 100</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="quiz-container" id="quizContainer"></div>
+            <div class="result-container" id="resultContainer">
+                <div class="school-name-result">शासकीय माध्यमिक आश्रम शाळा तिरडे</div>
+                <div class="student-result-info" id="studentResultInfo"></div>
+                <div class="score-circle">
+                    <div class="score-number" id="scoreNumber">0</div>
+                    <div class="score-text">/ 100</div>
+                </div>
+                <div class="result-message" id="resultMessage"></div>
+                <div class="time-taken" id="timeTaken"></div>
+                <button class="btn" onclick="downloadCertificate()">📜 प्रमाणपत्र डाउनलोड करा</button>
+                <button class="btn btn-secondary" onclick="restartQuiz()">पुन्हा सुरू करा</button>
+                <div class="review-section" id="reviewSection">
+                    <h3>📊 तपशीलवार विश्लेषण</h3>
+                    <div id="reviewList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="saveNotification" class="save-notification">💾 उत्तरे सेव्ह केली...</div>
+    <script src="questions.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

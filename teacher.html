@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - शिक्षक रिपोर्ट</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .teacher-login {
+            max-width: 400px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard {
+            display: none;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+        
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .student-table th,
+        .student-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .student-table th {
+            background: #1e3c72;
+            color: white;
+        }
+        
+        .student-table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .grade-a { color: #4caf50; font-weight: bold; }
+        .grade-b { color: #2196f3; font-weight: bold; }
+        .grade-c { color: #ff9800; font-weight: bold; }
+        .grade-d { color: #f44336; font-weight: bold; }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .export-btn {
+            background: #4caf50;
+            margin-bottom: 20px;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="school-header">
+        <h1>शासकीय माध्यमिक आश्रम शाळा तिरडे</h1>
+        <p>शिक्षक डॅशबोर्ड</p>
+    </div>
+
+    <!-- Teacher Login -->
+    <div id="teacherLogin" class="teacher-login">
+        <h2>🔐 शिक्षक लॉगिन</h2>
+        <p>पासवर्ड टाका</p>
+        <input type="password" id="teacherPassword" class="password-input" placeholder="पासवर्ड">
+        <button class="btn btn-full" onclick="teacherLogin()">लॉगिन करा</button>
+        <p style="color: red; margin-top: 10px;" id="loginError"></p>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>📊 विद्यार्थी रिपोर्ट</h2>
+            <button class="btn btn-secondary" onclick="teacherLogout()">लॉगआउट</button>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-number" id="totalStudents">0</div>
+                <div>एकूण विद्यार्थी</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="avgScore">0</div>
+                <div>सरासरी गुण</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="topScore">0</div>
+                <div>सर्वोच्च गुण</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="passCount">0</div>
+                <div>पास विद्यार्थी</div>
+            </div>
+        </div>
+
+        <!-- Search -->
+        <input type="text" class="search-box" id="searchBox" placeholder="🔍 नाव, वर्ग किंवा रोल नंबर शोधा..." onkeyup="searchStudents()">
+
+        <!-- Export Button -->
+        <button class="btn export-btn" onclick="exportToExcel()">📥 Excel मध्ये डाउनलोड करा</button>
+
+        <!-- Students Table -->
+        <table class="student-table">
+            <thead>
+                <tr>
+                    <th>क्र.</th>
+                    <th>नाव</th>
+                    <th>वर्ग</th>
+                    <th>रोल नं.</th>
+                    <th>गुण</th>
+                    <th>टक्केवारी</th>
+                    <th>ग्रेड</th>
+                    <th>वेळ</th>
+                    <th>तारीख</th>
+                </tr>
+            </thead>
+            <tbody id="studentsTableBody">
+                <!-- Data येथे दिसेल -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Teacher Password (तुम्ही बदलू शकता)
+        const TEACHER_PASSWORD = "tirade123";
+
+        // Check if already logged in
+        window.onload = function() {
+            if (localStorage.getItem('teacher_logged_in') === 'true') {
+                showDashboard();
+            }
+        };
+
+        function teacherLogin() {
+            const password = document.getElementById('teacherPassword').value;
+            if (password === TEACHER_PASSWORD) {
+                localStorage.setItem('teacher_logged_in', 'true');
+                showDashboard();
+            } else {
+                document.getElementById('loginError').textContent = "चुकीचा पासवर्ड!";
+            }
+        }
+
+        function teacherLogout() {
+            localStorage.removeItem('teacher_logged_in');
+            location.reload();
+        }
+
+        function showDashboard() {
+            document.getElementById('teacherLogin').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadStudentData();
+        }
+
+        function loadStudentData() {
+            const allResults = JSON.parse(localStorage.getItem('quiz_all_results') || '[]');
+            
+            // Sort by date (newest first)
+            allResults.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+            
+            displayStats(allResults);
+            displayTable(allResults);
+        }
+
+        function displayStats(results) {
+            const total = results.length;
+            if (total === 0) {
+                document.getElementById('totalStudents').textContent = '0';
+                document.getElementById('avgScore').textContent = '0';
+                document.getElementById('topScore').textContent = '0';
+                document.getElementById('passCount').textContent = '0';
+                return;
+            }
+
+            const scores = results.map(r => r.score);
+            const avg = (scores.reduce((a, b) => a + b, 0) / total).toFixed(1);
+            const top = Math.max(...scores);
+            const pass = results.filter(r => (r.score / r.total) >= 0.4).length;
+
+            document.getElementById('totalStudents').textContent = total;
+            document.getElementById('avgScore').textContent = avg;
+            document.getElementById('topScore').textContent = top;
+            document.getElementById('passCount').textContent = pass;
+        }
+
+        function displayTable(results) {
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+
+            results.forEach((result, index) => {
+                const percentage = ((result.score / result.total) * 100).toFixed(1);
+                const grade = getGrade(percentage);
+                const timeUsed = formatTime(result.timeUsed);
+                const date = new Date(result.submittedAt).toLocaleString('mr-IN');
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${result.student.name}</td>
+                    <td>${result.student.class}</td>
+                    <td>${result.student.roll}</td>
+                    <td><strong>${result.score}/${result.total}</strong></td>
+                    <td>${percentage}%</td>
+                    <td class="grade-${grade.toLowerCase()}">${grade}</td>
+                    <td>${timeUsed}</td>
+                    <td>${date}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function getGrade(percentage) {
+            if (percentage >= 80) return 'A';
+            if (percentage >= 60) return 'B';
+            if (percentage >= 40) return 'C';
+            return 'D';
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}m ${secs}s`;
+        }
+
+        function searchStudents() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const allResults = JSON.parse(localStorage.getItem('quiz_all_results') || '[]');
+            
+            const filtered = allResults.filter(r => 
+                r.student.name.toLowerCase().includes(searchTerm) ||
+                r.student.class.toLowerCase().includes(searchTerm) ||
+                r.student.roll.toLowerCase().includes(searchTerm)
+            );
+            
+            displayTable(filtered);
+        }
+
+        function exportToExcel() {
+            const allResults = JSON.parse(localStorage.getItem('quiz_all_results') || '[]');
+            
+            if (allResults.length === 0) {
+                alert('डाउनलोड करण्यासाठी कोणताही डेटा नाही!');
+                return;
+            }
+
+            // Create CSV content
+            let csv = 'क्र.,नाव,वर्ग,रोल नंबर,गुण,एकूण गुण,टक्केवारी,ग्रेड,वापरलेली वेळ (सेकंद),तारीख\n';
+            
+            allResults.forEach((result, index) => {
+                const percentage = ((result.score / result.total) * 100).toFixed(1);
+                const grade = getGrade(percentage);
+                const date = new Date(result.submittedAt).toLocaleString('mr-IN');
+                
+                csv += `${index + 1},${result.student.name},${result.student.class},${result.student.roll},${result.score},${result.total},${percentage}%,${grade},${result.timeUsed},${date}\n`;
+            });
+
+            // Download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `student_report_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+    </script>
+</body>
+</html>
